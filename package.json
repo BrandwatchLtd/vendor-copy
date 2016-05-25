@@ -1,0 +1,31 @@
+{
+  "name": "vendor-copy",
+  "version": "1.0.0",
+  "description": "A utility to copy client-side dependencies into a folder.",
+  "main": "index.js",
+  "bin": {
+    "vendor-copy": "./cli.js"
+  },
+  "dependencies": {
+    "mkdirp": "0.5.1"
+  },
+  "devDependencies": {
+    "es2015-deferred": "2.0.1",
+    "eslint": "2.10.2",
+    "mocha": "2.5.2",
+    "rimraf": "2.5.2",
+    "sandboxed-module": "2.0.3",
+    "sinon": "1.17.4"
+  },
+  "scripts": {
+    "test": "mocha tests; rimraf test-copy-space",
+    "lint": "eslint ."
+  },
+  "repository": "github:vizia/vendor-copy",
+  "author": "Mark S. Everitt",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/vizia/vendor-copy/issues"
+  },
+  "homepage": "https://github.com/vizia/vendor-copy#readme"
+}
