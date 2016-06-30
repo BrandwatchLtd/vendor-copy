@@ -1,6 +1,6 @@
 {
   "name": "vendor-copy",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A utility to copy client-side dependencies into a folder.",
   "main": "index.js",
   "bin": {
