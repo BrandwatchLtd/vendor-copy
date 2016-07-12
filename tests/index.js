@@ -148,4 +148,30 @@ describe('vendorCopy', function(){
                 });
         });
     });
+
+    describe('folders into non-existing directories', function(){
+        beforeEach(function(){
+            var copySpecs = [
+                {
+                    from: '../test-copy-space/source',
+                    to: '../test-copy-space/target/some/path'
+                }
+            ];
+
+            return vendorCopy(__dirname, copySpecs);
+        });
+
+        it('creates the path and copies the folder across', function(){
+            var promises = [
+                readFile(path.join(__dirname, '../test-copy-space/target/some/path/fixture.01.txt')),
+                readFile(path.join(__dirname, '../test-copy-space/target/some/path/fixture.02.txt'))
+            ];
+
+            return Promise.all(promises)
+                .then(function(results){
+                    assert.equal(results[0], 'fixture 01');
+                    assert.equal(results[1], 'fixture 02');
+                });
+        });
+    });
 });
