@@ -1,8 +1,8 @@
 'use strict';
 
-var fs = require('fs');
 var path = require('path');
 var mkdirp = require('mkdirp');
+var ncp = require('ncp');
 
 function ensureDir(fromTo){
     var toPath = path.dirname(fromTo.to);
@@ -20,14 +20,13 @@ function ensureDir(fromTo){
 
 function copyFile(fromTo){
     return new Promise(function(resolve, reject){
-        var sourceFile = fs.createReadStream(fromTo.from);
-        var targetFile = fs.createWriteStream(fromTo.to);
-
-        sourceFile.on('error', reject);
-        targetFile.on('error', reject);
-        targetFile.on('close', resolve);
-
-        sourceFile.pipe(targetFile);
+        ncp(fromTo.from, fromTo.to, function(err){
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
     });
 }
 
