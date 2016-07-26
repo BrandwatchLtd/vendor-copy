@@ -7,9 +7,9 @@ var rimraf = require('rimraf');
 var mkdirp = require('mkdirp');
 var vendorCopy = require('../');
 
-function readFile(path){
-    return new Promise(function(resolve, reject){
-        fs.readFile(path, 'utf8', function(err, content){
+function readFile(path) {
+    return new Promise(function (resolve, reject) {
+        fs.readFile(path, 'utf8', function (err, content) {
             if (err) {
                 reject(err);
             } else {
@@ -19,9 +19,9 @@ function readFile(path){
     });
 }
 
-function rmdir(relativePath){
-    return new Promise(function(resolve, reject){
-        rimraf(path.join(__dirname, relativePath), function(err){
+function rmdir(relativePath) {
+    return new Promise(function (resolve, reject) {
+        rimraf(path.join(__dirname, relativePath), function (err) {
             if (err) {
                 reject(err);
             } else {
@@ -31,9 +31,9 @@ function rmdir(relativePath){
     });
 }
 
-function mkdir(relativePath){
-    return new Promise(function(resolve, reject){
-        mkdirp(path.join(__dirname, relativePath), function(err){
+function mkdir(relativePath) {
+    return new Promise(function (resolve, reject) {
+        mkdirp(path.join(__dirname, relativePath), function (err) {
             if (err) {
                 reject(err);
             } else {
@@ -43,9 +43,9 @@ function mkdir(relativePath){
     });
 }
 
-function writeFile(relativePath, content){
-    return new Promise(function(resolve, reject){
-        fs.writeFile(path.join(__dirname, relativePath), content, function(err){
+function writeFile(relativePath, content) {
+    return new Promise(function (resolve, reject) {
+        fs.writeFile(path.join(__dirname, relativePath), content, function (err) {
             if (err) {
                 reject(err);
             } else {
@@ -53,21 +53,21 @@ function writeFile(relativePath, content){
             }
         });
     });
-};
+}
 
-describe('vendorCopy', function(){
-    beforeEach(function(){
+describe('vendorCopy', function () {
+    beforeEach(function () {
         return rmdir('../test-copy-space/')
-            .then(function(){
+            .then(function () {
                 return mkdir('../test-copy-space/');
             })
-            .then(function(){
+            .then(function () {
                 return Promise.all([
                     mkdir('../test-copy-space/source'),
                     mkdir('../test-copy-space/target')
                 ]);
             })
-            .then(function(){
+            .then(function () {
                 return Promise.all([
                     writeFile('../test-copy-space/source/fixture.01.txt', 'fixture 01'),
                     writeFile('../test-copy-space/source/fixture.02.txt', 'fixture 02')
@@ -75,12 +75,12 @@ describe('vendorCopy', function(){
             });
     });
 
-    it('is a function', function(){
+    it('is a function', function () {
         assert.equal(typeof vendorCopy, 'function');
     });
 
-    describe('a single file into an existing directory', function(){
-        beforeEach(function(){
+    describe('a single file into an existing directory', function () {
+        beforeEach(function () {
             var copySpecs = [
                 {
                     from: '../test-copy-space/source/fixture.01.txt',
@@ -91,16 +91,16 @@ describe('vendorCopy', function(){
             return vendorCopy(__dirname, copySpecs);
         });
 
-        it('copies the file', function(){
+        it('copies the file', function () {
             return readFile(path.join(__dirname, '../test-copy-space/target/fixture.01.txt'))
-                .then(function(content){
+                .then(function (content) {
                     assert.equal(content, 'fixture 01');
                 });
         });
     });
 
-    describe('multiple files into an existing directory', function(){
-        beforeEach(function(){
+    describe('multiple files into an existing directory', function () {
+        beforeEach(function () {
             var copySpecs = [
                 {
                     from: '../test-copy-space/source/fixture.01.txt',
@@ -115,22 +115,22 @@ describe('vendorCopy', function(){
             return vendorCopy(__dirname, copySpecs);
         });
 
-        it('copies the files', function(){
+        it('copies the files', function () {
             var promises = [
                 readFile(path.join(__dirname, '../test-copy-space/target/fixture.01.txt')),
                 readFile(path.join(__dirname, '../test-copy-space/target/fixture.02.txt'))
             ];
 
             return Promise.all(promises)
-                .then(function(results){
+                .then(function (results) {
                     assert.equal(results[0], 'fixture 01');
                     assert.equal(results[1], 'fixture 02');
                 });
         });
     });
 
-    describe('files into non-existant directories', function(){
-        beforeEach(function(){
+    describe('files into non-existant directories', function () {
+        beforeEach(function () {
             var copySpecs = [
                 {
                     from: '../test-copy-space/source/fixture.01.txt',
@@ -141,16 +141,16 @@ describe('vendorCopy', function(){
             return vendorCopy(__dirname, copySpecs);
         });
 
-        it('creates the path and copies the file', function(){
+        it('creates the path and copies the file', function () {
             return readFile(path.join(__dirname, '../test-copy-space/target/some/path/fixture.01.txt'))
-                .then(function(content){
+                .then(function (content) {
                     assert.equal(content, 'fixture 01');
                 });
         });
     });
 
-    describe('folders into non-existing directories', function(){
-        beforeEach(function(){
+    describe('folders into non-existing directories', function () {
+        beforeEach(function () {
             var copySpecs = [
                 {
                     from: '../test-copy-space/source',
@@ -161,14 +161,14 @@ describe('vendorCopy', function(){
             return vendorCopy(__dirname, copySpecs);
         });
 
-        it('creates the path and copies the folder across', function(){
+        it('creates the path and copies the folder across', function () {
             var promises = [
                 readFile(path.join(__dirname, '../test-copy-space/target/some/path/fixture.01.txt')),
                 readFile(path.join(__dirname, '../test-copy-space/target/some/path/fixture.02.txt'))
             ];
 
             return Promise.all(promises)
-                .then(function(results){
+                .then(function (results) {
                     assert.equal(results[0], 'fixture 01');
                     assert.equal(results[1], 'fixture 02');
                 });
