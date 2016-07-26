@@ -12,7 +12,8 @@
   },
   "devDependencies": {
     "es2015-deferred": "2.0.1",
-    "eslint": "2.10.2",
+    "eslint": "3.1.1",
+    "eslint-config-vizia": "1.1.2",
     "mocha": "2.5.2",
     "rimraf": "2.5.2",
     "sandboxed-module": "2.0.3",
