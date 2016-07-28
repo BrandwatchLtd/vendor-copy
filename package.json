@@ -24,7 +24,7 @@
   },
   "repository": "github:vizia/vendor-copy",
   "author": "Mark S. Everitt",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/vizia/vendor-copy/issues"
   },
