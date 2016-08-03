@@ -4,11 +4,11 @@ var path = require('path');
 var mkdirp = require('mkdirp');
 var ncp = require('ncp');
 
-function ensureDir(fromTo){
+function ensureDir(fromTo) {
     var toPath = path.dirname(fromTo.to);
 
-    return new Promise(function(resolve, reject){
-        mkdirp(toPath, null, function(err){
+    return new Promise(function (resolve, reject) {
+        mkdirp(toPath, null, function (err) {
             if (err) {
                 reject(err);
             } else {
@@ -18,9 +18,9 @@ function ensureDir(fromTo){
     });
 }
 
-function copyFile(fromTo){
-    return new Promise(function(resolve, reject){
-        ncp(fromTo.from, fromTo.to, function(err){
+function copyFile(fromTo) {
+    return new Promise(function (resolve, reject) {
+        ncp(fromTo.from, fromTo.to, function (err) {
             if (err) {
                 reject(err);
             } else {
@@ -30,23 +30,23 @@ function copyFile(fromTo){
     });
 }
 
-function ensureDirAndCopy(root, relativeFromTo){
+function ensureDirAndCopy(root, relativeFromTo) {
     var fromTo = {
         from: path.join(root, relativeFromTo.from),
         to: path.join(root, relativeFromTo.to)
     };
 
     return ensureDir(fromTo)
-        .then(function(){
+        .then(function () {
             return copyFile(fromTo);
         })
-        .then(function(){
+        .then(function () {
             return fromTo;
         });
 }
 
-module.exports = function(root, copyItems){
-    return Promise.all(copyItems.map(function(relativeFromTo){
+module.exports = function (root, copyItems) {
+    return Promise.all(copyItems.map(function (relativeFromTo) {
         return ensureDirAndCopy(root, relativeFromTo);
     }));
 };
