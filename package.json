@@ -6,6 +6,10 @@
   "bin": {
     "vendor-copy": "./cli.js"
   },
+  "files": [
+    "index.js",
+    "cli.js"
+  ],
   "dependencies": {
     "mkdirp": "0.5.1",
     "ncp": "2.0.0"
