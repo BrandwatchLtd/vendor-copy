@@ -20,7 +20,7 @@ function ensureDir(fromTo) {
 
 function copyFile(fromTo) {
     return new Promise(function (resolve, reject) {
-        ncp(fromTo.from, fromTo.to, function (err) {
+        ncp(fromTo.from, fromTo.to, {dereference: true}, function (err) {
             if (err) {
                 reject(err);
             } else {
