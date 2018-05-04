@@ -91,7 +91,7 @@ describe('cli', function () {
             });
 
             it('logs the error', function () {
-                assert.deepEqual(errorStub.args, [['Failed to install vendor modules:', 'fake error stack']]);
+                assert.deepEqual(errorStub.args, [['Failed to install vendor modules:', {stack: 'fake error stack'}]]);
             });
 
             it('exits the process with status 1', function () {
@@ -151,7 +151,7 @@ describe('cli', function () {
             });
 
             it('logs the error', function () {
-                assert.deepEqual(errorStub.args, [['Failed to install vendor modules:', 'fake error stack']]);
+                assert.deepEqual(errorStub.args, [['Failed to install vendor modules:', {stack: 'fake error stack'}]]);
             });
 
             it('exits the process with status 1', function () {
@@ -211,7 +211,7 @@ describe('cli', function () {
             });
 
             it('logs the error', function () {
-                assert.deepEqual(errorStub.args, [['Failed to install vendor modules:', 'fake error stack']]);
+                assert.deepEqual(errorStub.args, [['Failed to install vendor modules:', {stack: 'fake error stack'}]]);
             });
 
             it('exits the process with status 1', function () {
@@ -271,7 +271,7 @@ describe('cli', function () {
             });
 
             it('logs the error', function () {
-                assert.deepEqual(errorStub.args, [['Failed to install vendor modules:', 'fake error stack']]);
+                assert.deepEqual(errorStub.args, [['Failed to install vendor modules:', {stack: 'fake error stack'}]]);
             });
 
             it('exits the process with status 1', function () {

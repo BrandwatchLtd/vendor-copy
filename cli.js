@@ -16,7 +16,7 @@ function logDone(items) {
 }
 
 function logError(error) {
-    console.error('Failed to install vendor modules:', error.stack); // eslint-disable-line no-console
+    console.error('Failed to install vendor modules:', error); // eslint-disable-line no-console
     process.exit(1);
 }
 
