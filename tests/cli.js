@@ -1,282 +1,287 @@
 'use strict';
 
-var path = require('path');
-var assert = require('assert');
-var SandboxedModule = require('sandboxed-module');
-var sinon = require('sinon');
-var Deferred = require('es2015-deferred');
+const path = require('path');
+const assert = require('assert');
+const SandboxedModule = require('sandboxed-module');
+const sinon = require('sinon');
+const Deferred = require('es2015-deferred');
 
-describe('cli', function () {
-    var sandbox = sinon.sandbox.create();
-    var vendorCopyStub = sandbox.stub();
-    var infoStub = sandbox.stub();
-    var errorStub = sandbox.stub();
-    var exitStub = sandbox.stub();
-    var packagePath = path.join(__dirname, '..', 'package.json');
-    var fakeProcess;
-    var requires;
-    var vendorCopyDeferred;
+describe('cli', () => {
+  const sandbox = sinon.sandbox.create();
+  const vendorCopyStub = sandbox.stub();
+  const infoStub = sandbox.stub();
+  const errorStub = sandbox.stub();
+  const exitStub = sandbox.stub();
+  const packagePath = path.join(__dirname, '..', 'package.json');
 
-    beforeEach(function () {
-        vendorCopyDeferred = new Deferred();
-        vendorCopyStub.returns(vendorCopyDeferred.promise);
+  let fakeProcess;
+  let requires;
+  let vendorCopyDeferred;
 
-        requires = {
-            '.': vendorCopyStub
-        };
+  beforeEach(() => {
+    vendorCopyDeferred = new Deferred();
+    vendorCopyStub.returns(vendorCopyDeferred.promise);
 
-        requires[packagePath] = {
-            vendorCopy: ['vendor-copy-config'],
-            devVendorCopy: ['dev-vendor-copy-config']
-        };
+    requires = {
+      '.': vendorCopyStub
+    };
 
-        fakeProcess = {
-            exit: exitStub,
-            cwd: process.cwd
-        };
+    requires[packagePath] = {
+      vendorCopy: ['vendor-copy-config'],
+      devVendorCopy: ['dev-vendor-copy-config']
+    };
+
+    fakeProcess = {
+      exit: exitStub,
+      cwd: process.cwd
+    };
+  });
+
+  afterEach(() => {
+    sandbox.reset();
+  });
+
+  describe('npm development mode', () => {
+    beforeEach(() => {
+      fakeProcess.env = { npm_config_production: 'false' };
+
+      SandboxedModule.require('../cli', {
+        requires,
+        globals: {
+          console: {
+            log: infoStub,
+            error: errorStub
+          },
+          process: fakeProcess
+        }
+      });
     });
 
-    afterEach(function () {
-        sandbox.reset();
+    it('calls the library with the root and the "vendorCopy" and "devVendorCopy" fields of the package.json file', () => {
+      assert.deepEqual(vendorCopyStub.args, [[path.join(__dirname, '..'), ['vendor-copy-config', 'dev-vendor-copy-config']]]);
     });
 
-    describe('npm development mode', function () {
-        beforeEach(function () {
-            fakeProcess.env = {npm_config_production: 'false'};
+    describe('when the library call resolves', () => {
+      beforeEach(() => {
+        vendorCopyDeferred.resolve([
+          {
+            from: 'from1',
+            to: 'to1'
+          },
+          {
+            from: 'from2',
+            to: 'to2'
+          }
+        ]);
 
-            SandboxedModule.require('../cli', {
-                requires: requires,
-                globals: {
-                    console: {
-                        log: infoStub,
-                        error: errorStub
-                    },
-                    process: fakeProcess
-                }
-            });
-        });
+        return vendorCopyDeferred.promise;
+      });
 
-        it('calls the library with the root and the "vendorCopy" and "devVendorCopy" fields of the package.json file', function () {
-            assert.deepEqual(vendorCopyStub.args, [[path.join(__dirname, '..'), ['vendor-copy-config', 'dev-vendor-copy-config']]]);
-        });
-
-        describe('when the library call resolves', function () {
-            beforeEach(function () {
-                vendorCopyDeferred.resolve([
-                    {
-                        from: 'from1',
-                        to: 'to1'
-                    },
-                    {
-                        from: 'from2',
-                        to: 'to2'
-                    }
-                ]);
-
-                return vendorCopyDeferred.promise;
-            });
-
-            it('logs each copy', function () {
-                assert.deepEqual(infoStub.args, [['from1 => to1'], ['from2 => to2']]);
-            });
-        });
-
-        describe('when the library call rejects', function () {
-            beforeEach(function () {
-                vendorCopyDeferred.reject({
-                    stack: 'fake error stack'
-                });
-
-                return vendorCopyDeferred.promise.catch(function () {});
-            });
-
-            it('logs the error', function () {
-                assert.deepEqual(errorStub.args, [['Failed to install vendor modules:', 'fake error stack']]);
-            });
-
-            it('exits the process with status 1', function () {
-                assert.deepStrictEqual(exitStub.args, [[1]]);
-            });
-        });
+      it('logs each copy', () => {
+        assert.deepEqual(infoStub.args, [['from1 => to1'], ['from2 => to2']]);
+      });
     });
 
-    describe('NODE_ENV development mode', function () {
-        beforeEach(function () {
-            fakeProcess.env = {NODE_ENV: 'development'};
-
-            SandboxedModule.require('../cli', {
-                requires: requires,
-                globals: {
-                    console: {
-                        log: infoStub,
-                        error: errorStub
-                    },
-                    process: fakeProcess
-                }
-            });
+    describe('when the library call rejects', () => {
+      beforeEach(() => {
+        vendorCopyDeferred.reject({
+          stack: 'fake error stack'
         });
 
-        it('calls the library with the root and the "vendorCopy" field of the package.json file', function () {
-            assert.deepEqual(vendorCopyStub.args, [[path.join(__dirname, '..'), ['vendor-copy-config', 'dev-vendor-copy-config']]]);
-        });
+        return vendorCopyDeferred.promise.catch(() => {});
+      });
 
-        describe('when the library call resolves', function () {
-            beforeEach(function () {
-                vendorCopyDeferred.resolve([
-                    {
-                        from: 'from1',
-                        to: 'to1'
-                    },
-                    {
-                        from: 'from2',
-                        to: 'to2'
-                    }
-                ]);
+      it('logs the error', () => {
+        assert.deepEqual(errorStub.args, [['Failed to install vendor modules:', { stack: 'fake error stack' }]]);
+      });
 
-                return vendorCopyDeferred.promise;
-            });
+      it('exits the process with status 1', () => {
+        assert.deepStrictEqual(exitStub.args, [[1]]);
+      });
 
-            it('logs each copy', function () {
-                assert.deepEqual(infoStub.args, [['from1 => to1'], ['from2 => to2']]);
-            });
-        });
+      it('exits the process with status 1', () => {
+        assert.deepStrictEqual(exitStub.args, [[1]]);
+      });
+    });
+  });
 
-        describe('when the library call rejects', function () {
-            beforeEach(function () {
-                vendorCopyDeferred.reject({
-                    stack: 'fake error stack'
-                });
+  describe('NODE_ENV development mode', () => {
+    beforeEach(() => {
+      fakeProcess.env = { NODE_ENV: 'development' };
 
-                return vendorCopyDeferred.promise.catch(function () {});
-            });
-
-            it('logs the error', function () {
-                assert.deepEqual(errorStub.args, [['Failed to install vendor modules:', 'fake error stack']]);
-            });
-
-            it('exits the process with status 1', function () {
-                assert.deepStrictEqual(exitStub.args, [[1]]);
-            });
-        });
+      SandboxedModule.require('../cli', {
+        requires,
+        globals: {
+          console: {
+            log: infoStub,
+            error: errorStub
+          },
+          process: fakeProcess
+        }
+      });
     });
 
-    describe('npm production mode', function () {
-        beforeEach(function () {
-            fakeProcess.env = {npm_config_production: 'true'};
-
-            SandboxedModule.require('../cli', {
-                requires: requires,
-                globals: {
-                    console: {
-                        log: infoStub,
-                        error: errorStub
-                    },
-                    process: fakeProcess
-                }
-            });
-        });
-
-        it('calls the library with the root and the "vendorCopy" field of the package.json file', function () {
-            assert.deepEqual(vendorCopyStub.args, [[path.join(__dirname, '..'), ['vendor-copy-config']]]);
-        });
-
-        describe('when the library call resolves', function () {
-            beforeEach(function () {
-                vendorCopyDeferred.resolve([
-                    {
-                        from: 'from1',
-                        to: 'to1'
-                    },
-                    {
-                        from: 'from2',
-                        to: 'to2'
-                    }
-                ]);
-
-                return vendorCopyDeferred.promise;
-            });
-
-            it('logs each copy', function () {
-                assert.deepEqual(infoStub.args, [['from1 => to1'], ['from2 => to2']]);
-            });
-        });
-
-        describe('when the library call rejects', function () {
-            beforeEach(function () {
-                vendorCopyDeferred.reject({
-                    stack: 'fake error stack'
-                });
-
-                return vendorCopyDeferred.promise.catch(function () {});
-            });
-
-            it('logs the error', function () {
-                assert.deepEqual(errorStub.args, [['Failed to install vendor modules:', 'fake error stack']]);
-            });
-
-            it('exits the process with status 1', function () {
-                assert.deepStrictEqual(exitStub.args, [[1]]);
-            });
-        });
+    it('calls the library with the root and the "vendorCopy" field of the package.json file', () => {
+      assert.deepEqual(vendorCopyStub.args, [[path.join(__dirname, '..'), ['vendor-copy-config', 'dev-vendor-copy-config']]]);
     });
 
-    describe('NODE_ENV production mode', function () {
-        beforeEach(function () {
-            fakeProcess.env = {NODE_ENV: 'production'};
+    describe('when the library call resolves', () => {
+      beforeEach(() => {
+        vendorCopyDeferred.resolve([
+          {
+            from: 'from1',
+            to: 'to1'
+          },
+          {
+            from: 'from2',
+            to: 'to2'
+          }
+        ]);
 
-            SandboxedModule.require('../cli', {
-                requires: requires,
-                globals: {
-                    console: {
-                        log: infoStub,
-                        error: errorStub
-                    },
-                    process: fakeProcess
-                }
-            });
-        });
+        return vendorCopyDeferred.promise;
+      });
 
-        it('calls the library with the root and the "vendorCopy" field of the package.json file', function () {
-            assert.deepEqual(vendorCopyStub.args, [[path.join(__dirname, '..'), ['vendor-copy-config']]]);
-        });
-
-        describe('when the library call resolves', function () {
-            beforeEach(function () {
-                vendorCopyDeferred.resolve([
-                    {
-                        from: 'from1',
-                        to: 'to1'
-                    },
-                    {
-                        from: 'from2',
-                        to: 'to2'
-                    }
-                ]);
-
-                return vendorCopyDeferred.promise;
-            });
-
-            it('logs each copy', function () {
-                assert.deepEqual(infoStub.args, [['from1 => to1'], ['from2 => to2']]);
-            });
-        });
-
-        describe('when the library call rejects', function () {
-            beforeEach(function () {
-                vendorCopyDeferred.reject({
-                    stack: 'fake error stack'
-                });
-
-                return vendorCopyDeferred.promise.catch(function () {});
-            });
-
-            it('logs the error', function () {
-                assert.deepEqual(errorStub.args, [['Failed to install vendor modules:', 'fake error stack']]);
-            });
-
-            it('exits the process with status 1', function () {
-                assert.deepStrictEqual(exitStub.args, [[1]]);
-            });
-        });
+      it('logs each copy', () => {
+        assert.deepEqual(infoStub.args, [['from1 => to1'], ['from2 => to2']]);
+      });
     });
+
+    describe('when the library call rejects', () => {
+      beforeEach(() => {
+        vendorCopyDeferred.reject({
+          stack: 'fake error stack'
+        });
+
+        return vendorCopyDeferred.promise.catch(() => {});
+      });
+
+      it('logs the error', () => {
+        assert.deepEqual(errorStub.args, [['Failed to install vendor modules:', { stack: 'fake error stack' }]]);
+      });
+
+      it('exits the process with status 1', () => {
+        assert.deepStrictEqual(exitStub.args, [[1]]);
+      });
+    });
+  });
+
+  describe('npm production mode', () => {
+    beforeEach(() => {
+      fakeProcess.env = { npm_config_production: 'true' };
+
+      SandboxedModule.require('../cli', {
+        requires,
+        globals: {
+          console: {
+            log: infoStub,
+            error: errorStub
+          },
+          process: fakeProcess
+        }
+      });
+    });
+
+    it('calls the library with the root and the "vendorCopy" field of the package.json file', () => {
+      assert.deepEqual(vendorCopyStub.args, [[path.join(__dirname, '..'), ['vendor-copy-config']]]);
+    });
+
+    describe('when the library call resolves', () => {
+      beforeEach(() => {
+        vendorCopyDeferred.resolve([
+          {
+            from: 'from1',
+            to: 'to1'
+          },
+          {
+            from: 'from2',
+            to: 'to2'
+          }
+        ]);
+
+        return vendorCopyDeferred.promise;
+      });
+
+      it('logs each copy', () => {
+        assert.deepEqual(infoStub.args, [['from1 => to1'], ['from2 => to2']]);
+      });
+    });
+
+    describe('when the library call rejects', () => {
+      beforeEach(() => {
+        vendorCopyDeferred.reject({
+          stack: 'fake error stack'
+        });
+
+        return vendorCopyDeferred.promise.catch(() => {});
+      });
+
+      it('logs the error', () => {
+        assert.deepEqual(errorStub.args, [['Failed to install vendor modules:', { stack: 'fake error stack' }]]);
+      });
+
+      it('exits the process with status 1', () => {
+        assert.deepStrictEqual(exitStub.args, [[1]]);
+      });
+    });
+  });
+
+  describe('NODE_ENV production mode', () => {
+    beforeEach(() => {
+      fakeProcess.env = { NODE_ENV: 'production' };
+
+      SandboxedModule.require('../cli', {
+        requires,
+        globals: {
+          console: {
+            log: infoStub,
+            error: errorStub
+          },
+          process: fakeProcess
+        }
+      });
+    });
+
+    it('calls the library with the root and the "vendorCopy" field of the package.json file', () => {
+      assert.deepEqual(vendorCopyStub.args, [[path.join(__dirname, '..'), ['vendor-copy-config']]]);
+    });
+
+    describe('when the library call resolves', () => {
+      beforeEach(() => {
+        vendorCopyDeferred.resolve([
+          {
+            from: 'from1',
+            to: 'to1'
+          },
+          {
+            from: 'from2',
+            to: 'to2'
+          }
+        ]);
+
+        return vendorCopyDeferred.promise;
+      });
+
+      it('logs each copy', () => {
+        assert.deepEqual(infoStub.args, [['from1 => to1'], ['from2 => to2']]);
+      });
+    });
+
+    describe('when the library call rejects', () => {
+      beforeEach(() => {
+        vendorCopyDeferred.reject({
+          stack: 'fake error stack'
+        });
+
+        return vendorCopyDeferred.promise.catch(() => {});
+      });
+
+      it('logs the error', () => {
+        assert.deepEqual(errorStub.args, [['Failed to install vendor modules:', { stack: 'fake error stack' }]]);
+      });
+
+      it('exits the process with status 1', () => {
+        assert.deepStrictEqual(exitStub.args, [[1]]);
+      });
+    });
+  });
 });
