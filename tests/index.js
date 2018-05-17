@@ -55,6 +55,21 @@ function writeFile(relativePath, content) {
     });
 }
 
+function symlink(relativeTargetPath, relativeDestinationPath) {
+    var targetPath = path.join(__dirname, relativeTargetPath);
+    var destinationPath = path.join(__dirname, relativeDestinationPath);
+
+    return new Promise(function (resolve, reject) {
+        fs.symlink(targetPath, destinationPath, function (err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+    });
+}
+
 describe('vendorCopy', function () {
     beforeEach(function () {
         return rmdir('../test-copy-space/')
@@ -72,6 +87,9 @@ describe('vendorCopy', function () {
                     writeFile('../test-copy-space/source/fixture.01.txt', 'fixture 01'),
                     writeFile('../test-copy-space/source/fixture.02.txt', 'fixture 02')
                 ]);
+            })
+            .then(function () {
+                return symlink('../test-copy-space/source/fixture.01.txt', '../test-copy-space/source/fixture.03.txt');
             });
     });
 
@@ -171,6 +189,26 @@ describe('vendorCopy', function () {
                 .then(function (results) {
                     assert.equal(results[0], 'fixture 01');
                     assert.equal(results[1], 'fixture 02');
+                });
+        });
+    });
+
+    describe('simlinks', function () {
+        beforeEach(function () {
+            var copySpecs = [
+                {
+                    from: '../test-copy-space/source/fixture.03.txt',
+                    to: '../test-copy-space/target/fixture.03.txt'
+                }
+            ];
+
+            return vendorCopy(__dirname, copySpecs);
+        });
+
+        it('resolves symlinks when copying', function () {
+            return readFile(path.join(__dirname, '../test-copy-space/target/fixture.03.txt'))
+                .then(function (content) {
+                    assert.equal(content, 'fixture 01');
                 });
         });
     });
