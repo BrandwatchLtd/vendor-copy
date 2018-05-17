@@ -2,5 +2,5 @@
     "env": {
         "node": true
     },
-    "extends": "vizia"
+    "extends": "qubyte/ES2015"
 }
