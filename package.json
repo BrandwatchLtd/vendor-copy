@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "es2015-deferred": "^3.0.0",
-    "eslint": "^6.1.0",
+    "eslint": "^9.32.0",
     "eslint-config-qubyte": "^3.0.0",
     "mocha": "^6.2.0",
     "rimraf": "^2.6.2",
