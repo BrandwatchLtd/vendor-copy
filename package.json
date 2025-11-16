@@ -16,9 +16,9 @@
   },
   "devDependencies": {
     "es2015-deferred": "^3.0.0",
-    "eslint": "^6.1.0",
+    "eslint": "^9.39.1",
     "eslint-config-qubyte": "^3.0.0",
-    "mocha": "^6.2.0",
+    "mocha": "^11.7.5",
     "rimraf": "^2.6.2",
     "sandboxed-module": "2.0.3",
     "sinon": "^7.4.1"
